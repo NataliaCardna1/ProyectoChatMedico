@@ -1,35 +1,50 @@
-package src.main.java.modelo;
-
+package modelo;
 import java.util.HashMap;
 
 public class GestorConsultorio {
-    private HashMap<Integer, Usuario> usuarios = new HashMap<>();
-    private HashMap<Integer, Documento> documentos = new HashMap<>();
-    private HashMap<String, Permiso> permisos = new HashMap<>();
+    private HashMap <String, Usuario> usuarios;
+    private HashMap <String, Documento> documentos;
 
-    public void agregarUsuario(Usuario usuario) {
+    public GestorConsultoriorio() {
+        usuarios = new HashMap<>();
+        documentos = new HashMap<>();
+    }
+
+    public void adionarUsuario(Usuario usuario) {
         usuarios.put(usuario.getIdUsuario(), usuario);
     }
 
-    public void agregarDocumento(Documento documento) {
-        documentos.put(documento.getIdDocumento(), documento);
+    public void adicionarDocumentos(Documento documento) {
+        documentos.put(documento.idDocumento(), documento);
     }
 
-    public void agregarPermisos(Permiso permiso) {
-        String clavePermiso = permiso.getUsuarioId() + "&" + permiso.getDocumentoId();
-        permisos.put(clavePermiso, permiso);
+
+    public void enviarDocumento(Usuario usuarioOrigen, Documento documento, Usuario usuarioDestino) throws Exception {
+        if (usuarioOrigen.getTipoUsuario() == TipoUsuario.MEDICO ) {
+            if (documento.tipoDocumento() == TipoDocumento.HISOTRIAS_CLINICAS ||
+                    documento.tipoDocumento() == TipoDocumento.RECETAS_MEDICAS ||
+                    documento.tipoDocumento() == TipoDocumento.OTROS) {
+                adicionarDocumentos(documento);
+                usuarioDestino.enviarDocumento(documento);
+            } else {
+                throw new Exception("El medico no puede enviar ese tipo de documento");
+            }
+        }
+    }
+    public void cargarDocumento (Usuario usuarioOrigen, Documento documento, Usuario usuarioDestino) throws Exception{
+        if(usuarioOrigen.getTipoUsuario()== TipoUsuario.NATURAL){
+            if(documento.tipoDocumento()== TipoDocumento.RADIOGRAFIAS || documento.tipoDocumento()== TipoDocumento.INFORME_LABORATORIO){
+                adicionarDocumentos(documento);
+                usuarioOrigen.cargarDocumento(documento);
+            }else{
+                throw new Exception("El paciente no puede cargar ese tipo de documento");
+            }
+
+        }
     }
 
-    public boolean tienePermisoImpresion(int usuarioId, int documentoId) {
-        String clavePermiso = usuarioId + "&" + documentoId;
-        Permiso permiso = permisos.get(clavePermiso);
-        return permiso != null && permiso.isPermisoImpresion();
-    }
 
-    public boolean tienePermisoEdicion(int usuarioId, int documentoId) {
-        String clavePermiso = usuarioId + "&" + documentoId;
-        Permiso permiso = permisos.get(clavePermiso);
-        return permiso != null && permiso.isPermisoEdicion();
 
-    }
+
+
 }
