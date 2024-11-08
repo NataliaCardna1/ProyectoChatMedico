@@ -5,6 +5,8 @@ import java.util.ArrayList;
 public class Usuario {
     private String idUsuario;
     private String nombre;
+    private ArrayList<Documento> documentos;
+    private TipoUsuario tipoUsuario;
 
 
     public Usuario(String idUsuario, String nombre) {
@@ -39,4 +41,14 @@ public class Usuario {
     }
 
 
+    public void enviarDocumento(Documento documento) {
+    }
+
+    public TipoUsuario getTipoUsuario() {
+        return tipoUsuario;
+    }
+
+    public void cargarDocumento(Documento documento) {
+
+    }
 }
