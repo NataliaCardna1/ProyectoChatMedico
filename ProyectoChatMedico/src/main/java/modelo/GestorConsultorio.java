@@ -1,52 +1,32 @@
 package modelo;
+import java.io.Serializable;
 import java.util.HashMap;
 
-public class GestorConsultorio {
-    private HashMap <String, Usuario> usuarios;
-    private HashMap <String, Documento> documentos;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-    public GestorConsultorio() {
-        usuarios = new HashMap<>();
-        documentos = new HashMap<>();
+public class GestorConsultorio implements Serializable {
+    private Map<Usuario, List<Mensaje>> mensajes = new HashMap<>();
+    private Map<Usuario, List<Documento>> documentos = new HashMap<>();
+
+    public synchronized void enviarMensaje(Usuario remitente, Usuario destinatario, String contenido) {
+        Mensaje mensaje = new Mensaje(remitente, destinatario, contenido);
+        mensajes.computeIfAbsent(destinatario, k -> new ArrayList<>()).add(mensaje);
+        mensajes.computeIfAbsent(remitente, k -> new ArrayList<>()).add(mensaje);
     }
 
-
-    public void adicionarUsuario(Usuario usuario) {
-        usuarios.put(usuario.getIdUsuario(), usuario);
+    public synchronized void enviarDocumento(Paciente paciente, Medico medico, Documento documento) {
+        documentos.computeIfAbsent(medico, k -> new ArrayList<>()).add(documento);
+        documentos.computeIfAbsent(paciente, k -> new ArrayList<>()).add(documento);
     }
 
-    public void adicionarDocumentos(Documento documento) {
-        documentos.put(documento.idDocumento(), documento);
+    public List<Mensaje> obtenerHistorialMensajes(Usuario usuario) {
+        return mensajes.getOrDefault(usuario, new ArrayList<>());
     }
 
-
-    public void enviarDocumento(Medico usuarioOrigen, Documento documento, Usuario usuarioDestino) throws Exception {
-        if (usuarioOrigen != null) {
-            throw new Exception("Solo los pacientes pueden enviar documentos.");
-        } else if (documento.tipoDocumento() == TipoDocumento.HISTORIAS_CLINICAS ||
-                documento.tipoDocumento() == TipoDocumento.RECETAS_MEDICAS ||
-                documento.tipoDocumento() == TipoDocumento.OTROS) {
-                     adicionarDocumentos(documento);
-                     usuarioOrigen.enviarDocumento(documento);  // Aquí asumo que 'enviarDocumento' era un error y debería ser 'recibirDocumento'
-        } else {
-            throw new Exception("El tipo de documento no es válido para el paciente.");
-        }
-        }
-
-    public void cargarDocumento (Usuario usuarioOrigen, Documento documento, Usuario usuarioDestino) throws Exception{
-        if(usuarioOrigen.getTipoUsuario()== TipoUsuario.PACIENTE){
-            if(documento.tipoDocumento()== TipoDocumento.RADIOGRAFIAS || documento.tipoDocumento()== TipoDocumento.INFORME_LABORATORIO){
-                adicionarDocumentos(documento);
-                usuarioOrigen.cargarDocumento(documento);
-            }else{
-                throw new Exception("El paciente no puede cargar ese tipo de documento");
-            }
-
-        }
+    public List<Documento> obtenerDocumentos(Usuario usuario) {
+        return documentos.getOrDefault(usuario, new ArrayList<>());
     }
-
-
-
-
-
 }

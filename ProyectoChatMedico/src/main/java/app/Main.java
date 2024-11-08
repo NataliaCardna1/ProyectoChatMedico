@@ -4,7 +4,7 @@ import modelo.*;
 
 public class Main {
     public static void main(String[] args) {
-        var usuario = new Usuario("U1", "Julian");
+    /*    var usuario = new Usuario("U1", "Julian");
         var usuario2 = new Usuario("U2", "Natalia");
         var medico = new Usuario("U1", "Julian");
         var documento = new Documento("1", "His", usuario, "C:\\midocumento.docx", TipoDocumento.RADIOGRAFIAS);
@@ -27,7 +27,7 @@ public class Main {
             System.out.println(documentoUsuario.nombre());
         }
 
+    */
 
     }
-
 }

@@ -1,11 +1,13 @@
 package modelo;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
-public class Usuario {
+public class Usuario implements Serializable {
     private String idUsuario;
     private String nombre;
-
+    private ArrayList<Documento> documentos;
 
     public Usuario(String idUsuario, String nombre) {
         this.idUsuario = idUsuario;

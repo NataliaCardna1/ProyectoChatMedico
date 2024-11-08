@@ -1,17 +1,13 @@
 package modelo;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Medico extends Usuario{
-private String codigoUser ;
-private String nombre;
-private ArrayList<Documento> documentosM;
+public class Medico extends Usuario implements Serializable {
 
     public Medico(String idUsuario, String nombre) {
         super(idUsuario, nombre);
     }
 
-    public void cargarDocumento(Documento documento) {
-        documentosM.add(documento);
-    }
+
 }
