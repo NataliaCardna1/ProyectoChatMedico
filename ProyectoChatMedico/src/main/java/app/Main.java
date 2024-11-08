@@ -4,9 +4,9 @@ import modelo.*;
 
 public class Main {
     public static void main(String[] args) {
-        var usuario = new Usuario("U1", "Julian", TipoUsuario.NATURAL);
-        var usuario2 = new Usuario("U2", "Natalia", TipoUsuario.NATURAL);
-        var medico = new Usuario("U1", "Julian", TipoUsuario.MEDICO);
+        var usuario = new Usuario("U1", "Julian");
+        var usuario2 = new Usuario("U2", "Natalia");
+        var medico = new Usuario("U1", "Julian");
         var documento = new Documento("1", "His", usuario, "C:\\midocumento.docx", TipoDocumento.RADIOGRAFIAS);
         var documento2 = new Documento("2", "Receta", usuario2, "C:\\mireceta.docx", TipoDocumento.RECETAS_MEDICAS);
         var gestorConsultario = new GestorConsultorio();
