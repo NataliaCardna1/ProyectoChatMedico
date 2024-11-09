@@ -1,17 +1,15 @@
 package modelo;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Paciente extends Usuario{
+public class Paciente extends Usuario implements Serializable {
 
-    private ArrayList<Documento> documentos;
-
-    public Paciente(String idUsuario, String nombre, ArrayList<Documento> documentos) {
+    public Paciente(String idUsuario, String nombre) {
         super(idUsuario, nombre);
-        this.documentos = documentos;
     }
 
     public void enviarDocumento(Documento documento) {
-        documentos.add(documento);
+        //documentos.add(documento);
     }
 }

@@ -1,16 +1,15 @@
 package modelo;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Usuario {
+public class Usuario implements Serializable {
     private String idUsuario;
     private String nombre;
-
 
     public Usuario(String idUsuario, String nombre) {
         this.idUsuario = idUsuario;
         this.nombre = nombre;
-        this.documentos = new ArrayList<Documento>();
     }
 
     public String getIdUsuario() {
@@ -28,15 +27,5 @@ public class Usuario {
     public void setNombre(String nombre) {
         this.nombre = nombre;
     }
-
-
-    public ArrayList<Documento> getDocumentos() {
-        return documentos;
-    }
-
-    public void setDocumentos(ArrayList<Documento> documentos) {
-        this.documentos = documentos;
-    }
-
 
 }

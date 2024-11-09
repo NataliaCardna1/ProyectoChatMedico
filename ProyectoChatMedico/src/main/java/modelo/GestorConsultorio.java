@@ -27,14 +27,14 @@ public class GestorConsultorio {
                 documento.tipoDocumento() == TipoDocumento.RECETAS_MEDICAS ||
                 documento.tipoDocumento() == TipoDocumento.OTROS) {
                      adicionarDocumentos(documento);
-                     usuarioOrigen.enviarDocumento(documento);  // Aquí asumo que 'enviarDocumento' era un error y debería ser 'recibirDocumento'
+                     //usuarioOrigen.enviarDocumento(documento);  // Aquí asumo que 'enviarDocumento' era un error y debería ser 'recibirDocumento'
         } else {
             throw new Exception("El tipo de documento no es válido para el paciente.");
         }
         }
 
     public void cargarDocumento (Usuario usuarioOrigen, Documento documento, Usuario usuarioDestino) throws Exception{
-        if(usuarioOrigen.getTipoUsuario()== TipoUsuario.PACIENTE){
+        /*if(usuarioOrigen.getTipoUsuario()== TipoUsuario.PACIENTE){
             if(documento.tipoDocumento()== TipoDocumento.RADIOGRAFIAS || documento.tipoDocumento()== TipoDocumento.INFORME_LABORATORIO){
                 adicionarDocumentos(documento);
                 usuarioOrigen.cargarDocumento(documento);
@@ -42,7 +42,7 @@ public class GestorConsultorio {
                 throw new Exception("El paciente no puede cargar ese tipo de documento");
             }
 
-        }
+        }*/
     }
 
 

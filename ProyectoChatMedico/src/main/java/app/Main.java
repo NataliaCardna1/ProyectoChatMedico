@@ -16,16 +16,16 @@ public class Main {
         } catch (Exception e) {
             System.err.println(e.getMessage());
         }
-        try {
-            gestorConsultario.enviarDocumento(medico, documento2, usuario2);
-        } catch (Exception e) {
-            System.err.println(e.getMessage());
-        }
+//        try {
+//            gestorConsultario.enviarDocumento(medico, documento2, usuario2);
+//        } catch (Exception e) {
+//            System.err.println(e.getMessage());
+//        }
 
 
-        for (Documento documentoUsuario : usuario2.getDocumentos() ) {
-            System.out.println(documentoUsuario.nombre());
-        }
+//        for (Documento documentoUsuario : usuario2.getDocumentos() ) {
+//            System.out.println(documentoUsuario.nombre());
+//        }
 
 
     }
