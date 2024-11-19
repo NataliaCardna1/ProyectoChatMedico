@@ -1,5 +1,6 @@
 package sockets;
 
+import modelo.Chat;
 import modelo.Usuario;
 
 import java.io.IOException;
@@ -13,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class Servidor {
     private static final int PORT = 12345;
-    private Map<Socket, Usuario> conexionesCliente = new ConcurrentHashMap<>();
+    private Map<String, HiloCliente> usuarioSocket = new ConcurrentHashMap<>();//Hacemos esto para relacionar tambien el ID del usuario y que de esa forma, el servidor sepa a donde enviar (redirigir) el mensaje
 
     public void iniciarServidor(){
         try (ServerSocket socketServidor = new ServerSocket(PORT)){
@@ -21,7 +22,7 @@ public class Servidor {
 
             while (true){
                 Socket clienteSocket = socketServidor.accept();
-                new Thread(new HiloCliente(clienteSocket, conexionesCliente)).start();
+                new Thread(new HiloCliente(clienteSocket, usuarioSocket)).start(); //Se pasa este nuevo argumento para que cada hilo que se cree por cliente, tenga el ID asociado
             }
         } catch (IOException e) {
             e.printStackTrace();
