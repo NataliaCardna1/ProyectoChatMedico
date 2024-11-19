@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.SVGPath?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="368.0" prefWidth="293.0" style="-fx-background-color: #FFE3E3;" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1">
+   <center>
+      <VBox alignment="BOTTOM_RIGHT" prefHeight="377.0" prefWidth="294.0" spacing="25.0" styleClass="primary_color" BorderPane.alignment="CENTER">
+         <children>
+            <Pane prefHeight="6.0" prefWidth="274.0" />
+            <HBox alignment="CENTER" prefHeight="45.0" prefWidth="254.0" spacing="20.0">
+               <children>
+                  <SVGPath fx:id="imgSpotify" content="M42.5,7.6A12,12,0,0,0,34,4c-3.9,0-8,3.1-10,6.5C22,7.1,17.9,4,14,4A12,12,0,0,0,5.5,7.6,11.9,11.9,0,0,0,2,16.1,11.1,11.1,0,0,0,2.2,18H6.3A6.8,6.8,0,0,1,6,16.1a7.7,7.7,0,0,1,2.4-5.6A7.6,7.6,0,0,1,14,8.1c2.2,0,5.1,2,6.5,4.4L23.1,17a1.1,1.1,0,0,0,1.8,0l2.6-4.5c1.4-2.4,4.3-4.4,6.5-4.4a7.6,7.6,0,0,1,5.6,2.4A7.7,7.7,0,0,1,42,16.1c0,1.8-.9,3.7-2.7,5.9H25.9L24,25.1l-5.1-8.6a1.1,1.1,0,0,0-1.8,0L13.9,22H7a2,2,0,0,0-2,2.3A2.1,2.1,0,0,0,7.1,26h9L18,22.9l5.1,8.6a1.1,1.1,0,0,0,1.8,0L28.1,26h7.6L24,38.5,16,30H10.5L23.3,43.7a1,1,0,0,0,1.4,0C27.7,40.5,39,28.5,41,26.2s5-6,5-10.1A11.9,11.9,0,0,0,42.5,7.6Z" fill="#ff9797" scaleX="1.5" scaleY="1.5" />
+                  <Label fx:id="lblStorify" prefHeight="46.0" prefWidth="129.0" text="MediChat" textFill="#333333" translateX="5.0">
+                     <font>
+                        <Font name="Segoe UI Bold" size="26.0" />
+                     </font>
+                  </Label>
+               </children>
+            </HBox>
+            <VBox alignment="CENTER" prefHeight="148.0" prefWidth="294.0">
+               <children>
+                  <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+                     <children>
+                        <TextField fx:id="txtUsuario" prefHeight="26.0" prefWidth="234.0" promptText="Cedula" style="-fx-background-color: #FFFFFF;">
+                           <font>
+                              <Font name="System Bold Italic" size="12.0" />
+                           </font>
+                           <styleClass>
+                              <String fx:value="contenedorBusqueda" />
+                              <String fx:value="colorTextoTxt" />
+                           </styleClass>
+                        </TextField>
+                     </children>
+                  </HBox>
+                  <HBox alignment="CENTER" prefHeight="79.0" prefWidth="294.0">
+                     <children>
+                        <PasswordField fx:id="txtContrasenia" prefHeight="26.0" prefWidth="232.0" promptText="Contraseña" style="-fx-background-color: #FFFFFF;" translateY="-7.0">
+                           <font>
+                              <Font name="System Bold Italic" size="12.0" />
+                           </font>
+                           <styleClass>
+                              <String fx:value="contenedorBusqueda" />
+                              <String fx:value="colorTextoTxt" />
+                           </styleClass>
+                        </PasswordField>
+                     </children>
+                  </HBox>
+                  <Button fx:id="btnIniciarSesion" mnemonicParsing="false" prefHeight="30.0" prefWidth="104.0" style="-fx-background-color: #FF99A1;" styleClass="contenedorBusqueda" text="Iniciar sesion" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="11.0" />
+                     </font>
+                  </Button>
+               </children>
+            </VBox>
+            <VBox alignment="CENTER" prefHeight="57.0" prefWidth="294.0" spacing="8.0">
+               <children>
+                  <Label fx:id="lblRegistrarse" text="Registrarse" textFill="#7a7a7a">
+                     <font>
+                        <Font name="System Bold" size="12.0" />
+                     </font>
+                  </Label>
+               </children>
+            </VBox>
+         </children>
+      </VBox>
+   </center>
+   <opaqueInsets>
+      <Insets />
+   </opaqueInsets>
+   <padding>
+      <Insets bottom="5.0" left="5.0" right="7.0" top="5.0" />
+   </padding>
+</BorderPane>
