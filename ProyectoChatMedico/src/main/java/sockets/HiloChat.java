@@ -4,18 +4,20 @@ import java.io.*;
 import java.net.Socket;
 
 public class HiloChat extends Thread {
-   /* private final Socket remitente;
-    private final Socket destinatario;
-    private ObjectInputStream entradaRemitente;
-    private ObjectOutputStream salidaDestinatario;
+    private ObjectInputStream oisCliente1;
+    private ObjectInputStream oisCliente2;
 
-    public HiloChat(Socket remitente, Socket destinatario) {
-        this.remitente = remitente;
-        this.destinatario = destinatario;
+    private ObjectOutputStream oosCliente1;
+    private ObjectOutputStream oosCliente2;
+
+    public HiloChat(Socket cliente1, Socket cliente2) {
 
         try {
-            this.entradaRemitente = new ObjectInputStream(remitente.getInputStream());
-            this.salidaDestinatario = new ObjectOutputStream(destinatario.getOutputStream());
+            this.oisCliente1 = new ObjectInputStream(cliente1.getInputStream());
+            this.oisCliente2 = new ObjectInputStream(cliente2.getInputStream());
+
+            this.oosCliente1 = new ObjectOutputStream(cliente1.getOutputStream());
+            this.oosCliente2 = new ObjectOutputStream(cliente2.getOutputStream());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -24,26 +26,31 @@ public class HiloChat extends Thread {
     @Override
     public void run() {
         try {
-            while (true) {
-                // Lee el mensaje desde el remitente
-                Object mensaje = entradaRemitente.readObject();
 
-                // Envía el mensaje al destinatario
-                salidaDestinatario.writeObject(mensaje);
-                salidaDestinatario.flush();
-            }
-        } catch (IOException | ClassNotFoundException e) {
+            Thread hilo1 = new Thread(() -> manejarMensajes(oisCliente1, oosCliente2));
+            Thread hilo2 = new Thread(() -> manejarMensajes(oisCliente2, oosCliente1));
+
+            hilo1.start();
+            hilo2.start();
+
+            hilo1.join();
+            hilo2.join();
+
+        } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            try {
-                // Cierra los streams y sockets cuando el hilo termina
-                entradaRemitente.close();
-                salidaDestinatario.close();
-                remitente.close();
-                destinatario.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
-    }*/
+    }
+
+    private void manejarMensajes(ObjectInputStream entrada, ObjectOutputStream salida) {
+        try {
+            String mensaje;
+            while ((mensaje = entrada.readObject().toString()) != null) {
+                salida.writeObject(mensaje); // Reenviar mensaje al otro cliente
+            }
+        } catch (IOException e) {
+            System.err.println("Error en la comunicación: " + e.getMessage());
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
