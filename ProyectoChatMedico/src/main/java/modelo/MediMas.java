@@ -87,6 +87,10 @@ public class MediMas implements Serializable {
     public void setMensajes(List<Mensaje> mensajes) {
         this.mensajes = mensajes;
     }
+    public void adjuntarDocumentoAPaciente(Paciente paciente, Documento documento) {
+        paciente.agregarDocumento(documento);
+        System.out.println("Documento agregado al paciente: " + documento.getNombre());
+    }
 
     @Override
     public String toString() {

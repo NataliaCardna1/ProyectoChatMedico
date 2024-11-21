@@ -9,6 +9,9 @@ public record Documento(String idDocumento,
                         String ruta,
                         TipoDocumento tipoDocumento) implements Serializable {
 
+    public String getNombre() {
+        return nombre;
+    }
 }
 
 
