@@ -1,11 +1,9 @@
 package sockets;
 
-import modelo.Chat;
+import modelo.Consulta;
 import modelo.Usuario;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,17 +13,19 @@ import java.util.UUID;
 public class HiloCliente implements Runnable{
 
     private Socket socket;
-    private Map<String, HiloCliente> usuarioSocket;
+    private Map<String, HiloCliente> usuariosConectados;
+    private Map<String, Chat> chatsActivos;
     private Usuario usuario;
     private ObjectInputStream ois;
     private ObjectOutputStream oos;
 
-    public HiloCliente(Socket socket, Map<String, HiloCliente> usuarioSocket){
-        this.socket = socket;
-        this.usuarioSocket = usuarioSocket;
+    public HiloCliente(Socket socket, Map<String, HiloCliente> usuariosConectados, Map<String, Chat> chatsActivos){
         try{
-            ois = new ObjectInputStream((socket.getInputStream()));
-            oos = new ObjectOutputStream(socket.getOutputStream());
+            this.socket = socket;
+            this.usuariosConectados = usuariosConectados;
+            this.chatsActivos = chatsActivos;
+            this.ois = new ObjectInputStream((socket.getInputStream()));
+            this.oos = new ObjectOutputStream(socket.getOutputStream());
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -35,33 +35,93 @@ public class HiloCliente implements Runnable{
     public void run() {
         try {
 
-            boolean ejecucion = true;
+            String opcion = (String) ois.readObject();
 
-            while(ejecucion) {
+            if ("AGREGAR".equals(opcion)) {
+                this.usuario = (Usuario) ois.readObject();
+                usuariosConectados.put(this.usuario.getIdUsuario(), this);
+                oos.writeObject("Conectado como: " + this.getUsuario().getNombre());
+                System.out.println(this.getUsuario().getNombre() + " se conectó.");
+            }
 
-                String opcion = ois.readObject().toString();
-                System.out.println(opcion);
-                if (opcion.equals("AGREGAR")) {
-                    this.usuario = (Usuario) ois.readObject();
-                    usuarioSocket.put(this.usuario.getIdUsuario(), this);
-                } else if (opcion.equals("CONSULTA")) {
-                    oos.writeObject(getUsuariosConectados());
-                } else if (opcion.equals("CHAT")) {
+            while(true) {
 
-                    String destinatarioID = ois.readObject().toString(); //Cuando un cliente selecciona la opción de chatear, envía el ID del destinatario y el mensaje al servidor. El servidor recibe estos datos, lo que permite identificar al destinatario y saber qué mensaje enviarle.
-                    System.out.println(destinatarioID);
-                    final HiloCliente destinatarioSocket = usuarioSocket.get(destinatarioID);
-                    if (destinatarioSocket != null) {
-                        destinatarioSocket.getOos().writeObject("CHAT_INICIADO");
-                        new HiloChat(socket, destinatarioSocket.getSocket()).start();
+                opcion = (String) ois.readObject();
+
+                switch (opcion) {
+
+                    case "CONSULTA":
+                        oos.writeObject(getUsuariosConectados());
+                        oos.flush();
                         break;
-                    }
-                } else if(opcion.equals("SALIR")){
-                    ejecucion = false;
-                    usuarioSocket.remove(this.usuario.getIdUsuario());
-                    socket.close();
-                }else{
-                    System.out.println(ois.readObject());
+
+                    case "INICIAR_CHAT":
+                        String destinatarioID = (String) ois.readObject();
+
+                        if (usuariosConectados.containsKey(destinatarioID)) {
+                            HiloCliente destinatario = usuariosConectados.get(destinatarioID);
+                            Chat nuevoChat = new Chat(this, destinatario);
+                            chatsActivos.put(UUID.randomUUID().toString(), nuevoChat);
+                            oos.writeObject("Chat iniciado con " + destinatario.getUsuario().getNombre());
+                            oos.flush();
+                        } else {
+                            oos.writeObject("El usuario no está conectado.");
+                            oos.flush();
+                        }
+
+                        break;
+
+                    case "CHATS":
+
+                        List<String> chats = new ArrayList<>();
+                        for (Map.Entry<String, Chat> chat : chatsActivos.entrySet()) {
+                            if (chat.getValue().getUsuario1().equals(this) || chat.getValue().getUsuario2().equals(this)) {
+                                chats.add(chat.getKey());
+                            }
+                        }
+                        oos.writeObject(chats.toString());
+                        oos.flush();
+                        break;
+
+                    case "ENVIAR_MENSAJE":
+                        String chatID = (String) ois.readObject();
+                        Chat chat = chatsActivos.get(chatID);
+                        if (chat != null) {
+                            while (true) {
+                                System.out.println("Preparado para enviar mensajes en el chat: " + chatID);
+                                String mensaje = (String) ois.readObject();
+
+                                // Check for exit condition
+                                if ("SALIR_CHAT".equals(mensaje)) {
+                                    chatsActivos.remove(chatID);
+                                    oos.writeObject("Chat terminado.");
+                                    break;
+                                }
+
+                                // Use the Chat class's enviarMensaje method
+                                chat.enviarMensaje(mensaje, this.socket);
+                            }
+                        } else {
+                            oos.writeObject("Chat no encontrado.");
+                            oos.flush();
+                        }
+
+                        break;
+
+                    case "SALIR":
+                        usuariosConectados.remove(this.usuario.getIdUsuario());
+                        System.out.println(this.usuario.getNombre() + " se ha desconectado.");
+                        break;
+                    case "SOLICITAR CONSULTA":
+                        String tipoConsulta = (String) ois.readObject();  // El tipo de consulta que se solicita
+                        Object parametros = ois.readObject();  // Los parámetros necesarios para la consulta (si los hay)
+                        solicitarConsulta(tipoConsulta, parametros);  // Llamada al método que maneja la consulta
+                        break;
+
+                    default:
+                        oos.writeObject("Comando no válido.");
+                        break;
+
                 }
 
             }
@@ -71,54 +131,85 @@ public class HiloCliente implements Runnable{
         }
     }
 
+    public List<String> getUsuariosConectados(){
+        List<String> usuarios = new ArrayList<>();
+
+        for(HiloCliente usuario : usuariosConectados.values()){
+            usuarios.add(usuario.getUsuario().getIdUsuario()+" "+usuario.getUsuario().getNombre());
+        }
+
+        return usuarios;
+    }
+
     public Socket getSocket() {
         return socket;
-    }
-
-    public void setSocket(Socket socket) {
-        this.socket = socket;
-    }
-
-    public Map<String, HiloCliente> getUsuarioSocket() {
-        return usuarioSocket;
-    }
-
-    public void setUsuarioSocket(Map<String, HiloCliente> usuarioSocket) {
-        this.usuarioSocket = usuarioSocket;
     }
 
     public Usuario getUsuario() {
         return usuario;
     }
 
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
-    }
-
     public ObjectInputStream getOis() {
         return ois;
-    }
-
-    public void setOis(ObjectInputStream ois) {
-        this.ois = ois;
     }
 
     public ObjectOutputStream getOos() {
         return oos;
     }
+    public void solicitarConsulta(String tipoConsulta, Object parametros) {
+        if ("SOLICITAR CONSULTA".equals(tipoConsulta)) {
+            try {
+                // Realizar las preguntas y guardar las respuestas en un archivo
+                oos.writeObject("Iniciando la consulta...");
+                oos.flush();
 
-    public void setOos(ObjectOutputStream oos) {
-        this.oos = oos;
+                // Aquí puedes agregar preguntas específicas para el cliente
+                String respuesta1 = hacerPregunta("¿Cuál es su nombre?");
+                String respuesta2 = hacerPregunta("¿Cuál es su edad?");
+                String respuesta3 = hacerPregunta("¿Cuál es su problema médico?");
+
+                // Guardar las respuestas en un archivo
+                guardarRespuestasEnArchivo(respuesta1, respuesta2, respuesta3);
+
+                // Enviar una confirmación al cliente
+                oos.writeObject("Consulta completada y respuestas guardadas.");
+                oos.flush();
+            } catch (IOException e) {
+                try {
+                    oos.writeObject("Error al procesar la consulta: " + e.getMessage());
+                    oos.flush();
+                } catch (IOException ioException) {
+                    ioException.printStackTrace();
+                }
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
-    public List<String> getUsuariosConectados(){
-        List<String> usuarios = new ArrayList<>();
+    private String hacerPregunta(String pregunta) throws IOException, ClassNotFoundException {
+        // Enviar la pregunta al cliente
+        oos.writeObject(pregunta);
+        oos.flush();
 
-        for(HiloCliente usuario : usuarioSocket.values()){
-            usuarios.add(usuario.getUsuario().getIdUsuario()+" "+usuario.getUsuario().getNombre());
+        // Leer la respuesta del cliente
+        String respuesta = (String) ois.readObject();
+        System.out.println("Respuesta recibida: " + respuesta);
+        return respuesta;
+    }
+
+    private void guardarRespuestasEnArchivo(String respuesta1, String respuesta2, String respuesta3) {
+        // Guardar las respuestas en un archivo (por ejemplo, un archivo de texto)
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("consultas.txt", true))) {
+            writer.write("Consulta de usuario: \n");
+            writer.write("Nombre: " + respuesta1 + "\n");
+            writer.write("Edad: " + respuesta2 + "\n");
+            writer.write("Problema médico: " + respuesta3 + "\n");
+            writer.write("--------\n");
+            System.out.println("Respuestas guardadas en el archivo.");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
-        return usuarios;
     }
 
 }
