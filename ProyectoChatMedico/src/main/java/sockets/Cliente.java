@@ -1,6 +1,7 @@
 package sockets;
 
 import modelo.Paciente;
+import modelo.TipoConsulta;
 import modelo.Usuario;
 
 import java.io.*;
@@ -98,15 +99,44 @@ public class Cliente {
                         break;
 
                     case "6": // Solicitar consulta
-                        os.writeObject("SOLICITAR CONSULTA");
-                        String pregunta = (String) ois.readObject(); // El servidor envía la pregunta
-                        System.out.print(pregunta);
-                        respuesta = scanner.nextLine(); // El cliente responde
-                        os.writeObject(respuesta); // Enviar respuesta al servidor
-                        break;
+                        System.out.println("Tipos de Consulta:");
+                        for (TipoConsulta tipo : TipoConsulta.values()) {
+                            System.out.println((tipo.ordinal() + 1) + " - " + tipo.getDescripcion());
+                        }
 
-                    default:
-                        System.out.println("Opción no válida.");
+                        System.out.print("Seleccione el tipo de consulta: ");
+                        int opcionConsulta = Integer.parseInt(scanner.nextLine());
+
+                        if (opcionConsulta < 1 || opcionConsulta > TipoConsulta.values().length) {
+                            System.out.println("Opción inválida.");
+                            break;
+                        }
+
+                        TipoConsulta tipoConsulta = TipoConsulta.values()[opcionConsulta - 1];
+
+                        // Enviar solicitud al servidor
+                        os.writeObject("SOLICITAR CONSULTA");
+                        os.writeObject(tipoConsulta.name());
+                        os.writeObject(null); // Si no hay parámetros adicionales
+
+                        // Manejo del flujo interactivo
+                        while (true) {
+                            String mensajeServidor = (String) ois.readObject();
+
+                            if ("Consulta finalizada".equals(mensajeServidor)) {
+                                System.out.println("Consulta finalizada exitosamente.");
+                                break;
+                            }
+
+                            if (mensajeServidor.startsWith("¿")) { // Si el mensaje es una pregunta
+                                System.out.println(mensajeServidor);
+                                String respuestaConsulta = scanner.nextLine();
+                                os.writeObject(respuestaConsulta); // Enviar respuesta al servidor
+                            } else {
+                                System.out.println(mensajeServidor);
+                            }
+                        }
+
                         break;
                 }
             }
@@ -166,61 +196,7 @@ public class Cliente {
         }
 
     }
-    public void solicitarConsulta(String tipoConsulta, Object parametros) {
-        if ("SOLICITAR CONSULTA".equals(tipoConsulta)) {
-            try {
-                // Realizar las preguntas y guardar las respuestas en un archivo
-                os.writeObject("Iniciando la consulta...");
-                os.flush();
 
-                // Aquí puedes agregar preguntas específicas para el cliente
-                String respuesta1 = hacerPregunta("¿Cuál es su nombre?");
-                String respuesta2 = hacerPregunta("¿Cuál es su edad?");
-                String respuesta3 = hacerPregunta("¿Cuál es su problema médico?");
-
-                // Guardar las respuestas en un archivo
-                guardarRespuestasEnArchivo(respuesta1, respuesta2, respuesta3);
-
-                // Enviar una confirmación al cliente
-                os.writeObject("Consulta completada y respuestas guardadas.");
-                os.flush();
-            } catch (IOException e) {
-                try {
-                    os.writeObject("Error al procesar la consulta: " + e.getMessage());
-                    os.flush();
-                } catch (IOException ioException) {
-                    ioException.printStackTrace();
-                }
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    private String hacerPregunta(String pregunta) throws IOException, ClassNotFoundException {
-        // Enviar la pregunta al cliente
-        os.writeObject(pregunta);
-        os.flush();
-
-        // Leer la respuesta del cliente
-        String respuesta = (String) ois.readObject();
-        System.out.println("Respuesta recibida: " + respuesta);
-        return respuesta;
-    }
-
-    private void guardarRespuestasEnArchivo(String respuesta1, String respuesta2, String respuesta3) {
-        // Guardar las respuestas en un archivo (por ejemplo, un archivo de texto)
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("consultas.txt", true))) {
-            writer.write("Consulta de usuario: \n");
-            writer.write("Nombre: " + respuesta1 + "\n");
-            writer.write("Edad: " + respuesta2 + "\n");
-            writer.write("Problema médico: " + respuesta3 + "\n");
-            writer.write("--------\n");
-            System.out.println("Respuestas guardadas en el archivo.");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
     // Método principal para ejecutar el cliente
     public static void main(String[] args) {

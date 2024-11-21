@@ -1,14 +1,12 @@
 package sockets;
-
+import modelo.TipoConsulta;
 import modelo.Consulta;
 import modelo.Usuario;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class HiloCliente implements Runnable{
 
@@ -157,57 +155,64 @@ public class HiloCliente implements Runnable{
         return oos;
     }
     public void solicitarConsulta(String tipoConsulta, Object parametros) {
-        if ("SOLICITAR CONSULTA".equals(tipoConsulta)) {
-            try {
-                // Realizar las preguntas y guardar las respuestas en un archivo
-                oos.writeObject("Iniciando la consulta...");
-                oos.flush();
+        try {
+            TipoConsulta consulta = TipoConsulta.valueOf(tipoConsulta.toUpperCase());
 
-                // Aquí puedes agregar preguntas específicas para el cliente
-                String respuesta1 = hacerPregunta("¿Cuál es su nombre?");
-                String respuesta2 = hacerPregunta("¿Cuál es su edad?");
-                String respuesta3 = hacerPregunta("¿Cuál es su problema médico?");
-
-                // Guardar las respuestas en un archivo
-                guardarRespuestasEnArchivo(respuesta1, respuesta2, respuesta3);
-
-                // Enviar una confirmación al cliente
-                oos.writeObject("Consulta completada y respuestas guardadas.");
-                oos.flush();
-            } catch (IOException e) {
-                try {
-                    oos.writeObject("Error al procesar la consulta: " + e.getMessage());
-                    oos.flush();
-                } catch (IOException ioException) {
-                    ioException.printStackTrace();
-                }
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            }
+            realizarConsulta(consulta);
+        } catch (IllegalArgumentException e) {
+            enviarMensaje("Tipo de consulta no reconocido");
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
         }
     }
 
-    private String hacerPregunta(String pregunta) throws IOException, ClassNotFoundException {
-        // Enviar la pregunta al cliente
-        oos.writeObject(pregunta);
-        oos.flush();
+    private void realizarConsulta(TipoConsulta consulta) throws IOException, ClassNotFoundException {
+        enviarMensaje("Iniciando consulta " + consulta.name().toLowerCase());
 
-        // Leer la respuesta del cliente
-        String respuesta = (String) ois.readObject();
-        System.out.println("Respuesta recibida: " + respuesta);
-        return respuesta;
+        procesarConsulta(consulta.getPreguntas());
     }
 
-    private void guardarRespuestasEnArchivo(String respuesta1, String respuesta2, String respuesta3) {
-        // Guardar las respuestas en un archivo (por ejemplo, un archivo de texto)
+    private void procesarConsulta(List<String> preguntas) throws IOException, ClassNotFoundException {
+        List<String> respuestas = new ArrayList<>();
+
+        for (String pregunta : preguntas) {
+            enviarMensaje(pregunta);
+
+            String respuesta = (String) ois.readObject();
+            if (respuesta == null || respuesta.trim().isEmpty()) {
+                respuesta = "No proporcionada";
+            }
+            respuestas.add(respuesta);
+        }
+
+
+        guardarConsultaEnArchivo(respuestas,preguntas);
+        enviarMensaje("Consulta finalizada");
+    }
+
+    private void guardarConsultaEnArchivo( List<String> respuestas,List<String> preguntas) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("consultas.txt", true))) {
-            writer.write("Consulta de usuario: \n");
-            writer.write("Nombre: " + respuesta1 + "\n");
-            writer.write("Edad: " + respuesta2 + "\n");
-            writer.write("Problema médico: " + respuesta3 + "\n");
-            writer.write("--------\n");
-            System.out.println("Respuestas guardadas en el archivo.");
+            writer.write("--- Consulta " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()) + " ---\n");
+            //writer.write("Tipo de Consulta: " + tipoConsulta + "\n");
+
+            for (int i = 0; i < respuestas.size(); i++) {
+                writer.write("Pregunta " + (i + 1) + ": " + preguntas.get(i) + "\n");
+                writer.write("Respuesta " + (i + 1) + ": " + respuestas.get(i) + "\n");
+            }
+
+            writer.write("---------------------\n\n");
+            System.out.println("Consulta guardada exitosamente.");
         } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void enviarMensaje(Object mensaje) {
+        try {
+            oos.writeObject(mensaje);
+            oos.flush();
+        } catch (IOException e) {
+            System.err.println("Error al enviar mensaje: " + mensaje);
             e.printStackTrace();
         }
     }
